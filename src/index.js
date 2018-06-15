@@ -6,6 +6,7 @@ const stripHexPrefix = require('strip-hex-prefix');
  * @param {String} value
  * @return {String} output
  */
+ console.log("This should break");
 function padToEven(value) {
   var a = value; // eslint-disable-line
 
@@ -38,8 +39,7 @@ function intToHex(i) {
  */
 function intToBuffer(i) {
   const hex = intToHex(i);
-
-  return new Buffer(padToEven(hex.slice(2)), 'hex');
+  return Buffer.from(padToEven(hex.slice(2)), 'hex');
 }
 
 /**
@@ -68,7 +68,10 @@ function arrayContainsArray(superset, subset, some) {
   if (Array.isArray(superset) !== true) { throw new Error(`[ethjs-util] method arrayContainsArray requires input 'superset' to be an array got type '${typeof superset}'`); }
   if (Array.isArray(subset) !== true) { throw new Error(`[ethjs-util] method arrayContainsArray requires input 'subset' to be an array got type '${typeof subset}'`); }
 
-  return subset[Boolean(some) && 'some' || 'every']((value) => (superset.indexOf(value) >= 0));
+  // TODO Lint error https://github.com/standard/standard/issues/566
+  /* eslint-disable */
+  return subset[Boolean(some) && 'some' || 'every']((value) => superset.indexOf(value) >= 0);
+  /* eslint-enable */
 }
 
 /**
@@ -79,7 +82,7 @@ function arrayContainsArray(superset, subset, some) {
  * @returns {String} ascii string representation of hex value
  */
 function toUtf8(hex) {
-  const bufferValue = new Buffer(padToEven(stripHexPrefix(hex).replace(/^0+|0+$/g, '')), 'hex');
+  const bufferValue = Buffer.from(padToEven(stripHexPrefix(hex).replace(/^0+|0+$/g, '')), 'hex');
 
   return bufferValue.toString('utf8');
 }
@@ -116,7 +119,7 @@ function toAscii(hex) {
  * @returns {String} hex representation of input string
  */
 function fromUtf8(stringValue) {
-  const str = new Buffer(stringValue, 'utf8');
+  const str = Buffer.from(stringValue, 'utf8');
 
   return `0x${padToEven(str.toString('hex')).replace(/^0+|0+$/g, '')}`;
 }
@@ -159,7 +162,7 @@ function getKeys(params, key, allowEmpty) {
     var value = params[i][key]; // eslint-disable-line
     if (allowEmpty && !value) {
       value = '';
-    } else if (typeof(value) !== 'string') {
+    } else if (typeof value !== 'string') {
       throw new Error('invalid abi');
     }
     result.push(value);
@@ -177,11 +180,11 @@ function getKeys(params, key, allowEmpty) {
  * @returns {Boolean} output the string is a hex string
  */
 function isHexString(value, length) {
-  if (typeof(value) !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) {
+  if (typeof value !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) {
     return false;
   }
 
-  if (length && value.length !== 2 + 2 * length) { return false; }
+  if (length && value.length !== 2 + (2 * length)) { return false; }
 
   return true;
 }
